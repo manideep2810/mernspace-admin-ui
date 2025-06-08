@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { devtools } from "zustand/middleware"
 
-interface User {
+export interface User {
     id : number,
     firstName : string,
     lastName : string,
@@ -9,7 +9,7 @@ interface User {
     role : string
 } 
 
-interface AuthState{
+export interface AuthState{
     user : null | User
     setUser : (user : User) => void
     logout : () => void
