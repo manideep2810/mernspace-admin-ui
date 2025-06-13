@@ -12,33 +12,45 @@ import { useMutation } from "@tanstack/react-query";
 import { logout } from "../http/api";
 
 const {Sider , Header , Footer , Content} = Layout
-const items = [
-    {
-        key : '/',
-        icon : <Icon component={Home}/>,
-        label : <NavLink to='/'>Home</NavLink>
-    },
-    {
-        key : '/users',
-        icon : <UserOutlined />,
-        label : <NavLink to='/users'>Users</NavLink>
-    },
-    {
-        key : '/orders',
-        icon : <Icon component={BasketIcon}/>,
-        label : <NavLink to='/orders'>Orders</NavLink>
-    },
-    {
-        key : '/products',
-        icon : <Icon component={foodIcon}/>,
-        label : <NavLink to='/products'>Products</NavLink>
-    },
-    {
-        key : '/promos',
-        icon : <Icon component={GiftIcon}/>,
-        label : <NavLink to='/promos'>Promos</NavLink>
-    },
-]
+
+const getItems = (role : string)=>{
+    const baseItems = [
+        {
+            key : '/',
+            icon : <Icon component={Home}/>,
+            label : <NavLink to='/'>Home</NavLink>
+        },
+        {
+            key : '/orders',
+            icon : <Icon component={BasketIcon}/>,
+            label : <NavLink to='/orders'>Orders</NavLink>
+        },
+        {
+            key : '/products',
+            icon : <Icon component={foodIcon}/>,
+            label : <NavLink to='/products'>Products</NavLink>
+        },
+        {
+            key : '/promos',
+            icon : <Icon component={GiftIcon}/>,
+            label : <NavLink to='/promos'>Promos</NavLink>
+        },
+    ]
+    
+    if(role === 'admin'){
+        const menus = baseItems;
+        menus.splice(1,0,
+             {
+                key : '/users',
+                icon : <UserOutlined />,
+                label : <NavLink to='/users'>Users</NavLink>
+            },
+        )
+        return menus;
+    }
+
+    return baseItems
+}
 
 const Dashboard = () => {
     const { logout: logoutFromStore } = useAuthStore();
@@ -60,6 +72,8 @@ const Dashboard = () => {
     if(!user){
         return <Navigate to='/auth/login' />
     }
+    const items = getItems(user.role);
+
     return (
         <div>
             <Layout style={{ minHeight: '100vh' }}>

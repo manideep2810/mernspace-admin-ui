@@ -1,9 +1,11 @@
 import { Breadcrumb, Space, Table } from 'antd'
 import { RightOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link , Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '../../http/api';
 import type { User } from '../../types';
+import { useAuthStore } from '../../../store';
+import UsersFilter from './userFilter';
 
 const columns = [
     {
@@ -48,16 +50,21 @@ const Users = () => {
         },
     });
 
+    const {user} = useAuthStore();
+    if(user && user.role=='manager'){
+        return <Navigate to="/"/>
+    }
+
     return (
         <>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>Add commentMore actions
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <Breadcrumb
                     separator={<RightOutlined />}
                     items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Users' }]}
                 />
                 {isLoading && <div>Loading...</div>}
                 {isError && <div>{error.message}</div>}
-
+                <UsersFilter />
                 <Table columns={columns} dataSource={users} />
             </Space>
         </>
