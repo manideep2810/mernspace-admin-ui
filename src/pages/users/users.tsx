@@ -1,11 +1,12 @@
-import { Breadcrumb, Space, Table } from 'antd'
-import { RightOutlined } from '@ant-design/icons';
+import { Breadcrumb, Button, Drawer, Space, Table } from 'antd'
+import { PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Link , Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '../../http/api';
 import type { User } from '../../types';
 import { useAuthStore } from '../../../store';
 import UsersFilter from './userFilter';
+import { useState } from 'react';
 
 const columns = [
     {
@@ -38,6 +39,7 @@ const columns = [
 ];
 
 const Users = () => {
+    const [userDrawer,setUserDrawer] = useState(false);
     const {
         data: users,
         isLoading,
@@ -69,8 +71,33 @@ const Users = () => {
                         console.log(filterName);
                         console.log(filterValue);
                     }
-                }/>
+                }>
+                    <Button type="primary" 
+                        icon={<PlusOutlined />} 
+                        onClick={
+                            ()=>setUserDrawer(true)
+                        }>
+                        Add User
+                    </Button>
+                </UsersFilter>
                 <Table columns={columns} dataSource={users} rowKey={'id'}/>
+
+                <Drawer
+                    title='Create User'
+                    width={720}
+                    open={userDrawer}
+                    onClose={
+                        ()=>setUserDrawer(false)
+                    }
+                    extra = {
+                        <Space>
+                            <Button>Cancel</Button>
+                            <Button type='primary' >Submit</Button>
+                        </Space>
+                    }
+                >
+
+                </Drawer>
             </Space>
         </>
     );
