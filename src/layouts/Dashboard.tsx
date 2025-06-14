@@ -21,9 +21,9 @@ const getItems = (role : string)=>{
             label : <NavLink to='/'>Home</NavLink>
         },
         {
-            key : '/orders',
+            key : '/restaurents',
             icon : <Icon component={BasketIcon}/>,
-            label : <NavLink to='/orders'>Orders</NavLink>
+            label : <NavLink to='/restaurents'>Restaurents</NavLink>
         },
         {
             key : '/products',

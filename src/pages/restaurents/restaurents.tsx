@@ -1,13 +1,11 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from 'antd'
+import { Breadcrumb, Button, Drawer, Space, Table } from 'antd'
 import { PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Link , Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getUsers } from '../../http/api';
-import type { User } from '../../types';
+import { getTenants } from '../../http/api';
 import { useAuthStore } from '../../../store';
-import UsersFilter from './userFilter';
+import UsersFilter from './restaurentsFilter';
 import { useState } from 'react';
-import UserForm from './usersForm';
 
 const columns = [
     {
@@ -17,44 +15,28 @@ const columns = [
     },
     {
         title: 'Name',
-        dataIndex: 'firstName',
+        dataIndex: 'name',
         key: 'firstName',
-        render: (_text: string, record: User) => {
-            return (
-                <div>
-                    {record.firstName} {record.lastName}
-                </div>
-            );
-        },
+        
     },
     {
-        title: 'Email',
-        dataIndex: 'email',
+        title: 'Address',
+        dataIndex: 'address',
         key: 'email',
-    },
-    {
-        title: 'Role',
-        dataIndex: 'role',
-        key: 'role',
     },
 ];
 
-const Users = () => {
-
-    
+const Restaurents = () => {
+    const [tenantDrawer,setTenantDrawer] = useState(false);
     const {
-        token : {colorBgLayout}
-    } = theme.useToken();
-    const [userDrawer,setUserDrawer] = useState(false);
-    const {
-        data: users,
+        data: tenants,
         isLoading,
         isError,
         error,
     } = useQuery({
         queryKey: ['users'],
         queryFn: () => {
-            return getUsers().then((res) => res.data.users);
+            return getTenants().then((res) => res.data.tenants);
         },
     });
 
@@ -68,7 +50,7 @@ const Users = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <Breadcrumb
                     separator={<RightOutlined />}
-                    items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Users' }]}
+                    items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Restaurents' }]}
                 />
                 {isLoading && <div>Loading...</div>}
                 {isError && <div>{error.message}</div>}
@@ -81,20 +63,19 @@ const Users = () => {
                     <Button type="primary" 
                         icon={<PlusOutlined />} 
                         onClick={
-                            ()=>setUserDrawer(true)
+                            ()=>setTenantDrawer(true)
                         }>
-                        Add User
+                        Add Tenant
                     </Button>
                 </UsersFilter>
-                <Table columns={columns} dataSource={users} rowKey={'id'}/>
+                <Table columns={columns} dataSource={tenants} rowKey={'id'}/>
 
                 <Drawer
-                    title='Create User'
+                    title='Create Tenant'
                     width={720}
-                    open={userDrawer}
-                    styles={{body : {backgroundColor : colorBgLayout}}}
+                    open={tenantDrawer}
                     onClose={
-                        ()=>setUserDrawer(false)
+                        ()=>setTenantDrawer(false)
                     }
                     extra = {
                         <Space>
@@ -103,10 +84,6 @@ const Users = () => {
                         </Space>
                     }
                 >
-                
-                    <Form layout='vertical'>
-                        <UserForm />
-                    </Form>
 
                 </Drawer>
             </Space>
@@ -114,4 +91,4 @@ const Users = () => {
     );
 };
 
-export default Users;
+export default Restaurents;
