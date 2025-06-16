@@ -9,6 +9,7 @@ export type User  = {
     lastName : string
     email : string
     createdAt : string
+    tenant : Tenant
 }
 
 export type CreateUserData = {
