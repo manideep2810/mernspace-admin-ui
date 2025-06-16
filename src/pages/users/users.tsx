@@ -6,8 +6,9 @@ import { createUser, getUsers } from '../../http/api';
 import type { CreateUserData, FeildData, User } from '../../types';
 import { useAuthStore } from '../../../store';
 import UsersFilter from './userFilter';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import UserForm from './usersForm';
+import { debounce } from 'lodash';
 
 const columns = [
     {
@@ -60,9 +61,12 @@ const Users = () => {
         error,
     } = useQuery({
         queryKey: ['users',queryParams],
-        queryFn: () => {
+        queryFn: async () => {
+            const filteredParams = Object.fromEntries(
+                Object.entries(queryParams).filter((item) => !!item[1])
+            );
             const queryString = new URLSearchParams(
-                queryParams as unknown as Record<string,string>
+                filteredParams as unknown as Record<string,string>
             ).toString();
             console.log(queryString);
             return getUsers(queryString).then((res) => res.data);
@@ -87,6 +91,12 @@ const Users = () => {
         form.resetFields();
     }
 
+    const debouncedQUpdate = useMemo(() => {
+        return debounce((value: string | undefined) => {
+            setQueryParams((prev) => ({ ...prev, q: value }));
+        }, 1000);
+    }, []);
+
     const onFilterChange = async (changedFeilds : FeildData[])=>{
         console.log(changedFeilds)
 
@@ -95,8 +105,13 @@ const Users = () => {
                 [item.name[0]] : item.value
             }
         )).reduce((acc,item)=>({...acc,...item}),{})
+        
+        if('q' in changedFilterFeilds){
+            debouncedQUpdate(changedFilterFeilds.q)
+        }else{
+            setQueryParams((prev)=>({...prev,...changedFilterFeilds}))
+        }
 
-        setQueryParams((prev)=>({...prev,...changedFilterFeilds}))
     }
 
     if(user && user.role=='manager'){
