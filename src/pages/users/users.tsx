@@ -42,6 +42,11 @@ const columns = [
 const Users = () => {
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
+
+    const [queryParams , setQueryParams] = useState({
+        perPage : 3,
+        currentPage : 1
+    })
     
     const {
         token : {colorBgLayout}
@@ -53,9 +58,13 @@ const Users = () => {
         isError,
         error,
     } = useQuery({
-        queryKey: ['users'],
+        queryKey: ['users',queryParams],
         queryFn: () => {
-            return getUsers().then((res) => res.data.users);
+            const queryString = new URLSearchParams(
+                queryParams as unknown as Record<string,string>
+            ).toString();
+            console.log(queryString);
+            return getUsers(queryString).then((res) => res.data);
         },
     });
 
@@ -103,7 +112,26 @@ const Users = () => {
                         Add User
                     </Button>
                 </UsersFilter>
-                <Table columns={columns} dataSource={users} rowKey={'id'}/>
+                <Table 
+                columns={columns} 
+                dataSource={users?.data} 
+                rowKey={'id'}
+                pagination={
+                    {
+                        pageSize : queryParams.perPage,
+                        total : users?.total,
+                        current : queryParams.currentPage,
+                        onChange : (page)=>{
+                            setQueryParams((prev)=>{
+                                return {
+                                    ...prev,
+                                    currentPage : page
+                                }
+                            })
+                        }
+                    }
+                }
+                />
 
                 <Drawer
                     title='Create User'

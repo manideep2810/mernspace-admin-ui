@@ -15,7 +15,7 @@ const UserForm = () => {
         <Row>
             <Col span={24}>
                 <Space direction="vertical" size="large">
-                    <Card title="Basic info" bordered={false}>
+                    <Card title="Basic info">
                         <Row gutter={20}>
                             <Col span={12}>
                                 <Form.Item label="First name" name="firstName" rules={[
@@ -53,7 +53,7 @@ const UserForm = () => {
                         </Row>
                     </Card>
 
-                    <Card title="Security info" bordered={false}>
+                    <Card title="Security info">
                         <Row gutter={20}>
                             <Col span={12}>
                                 <Form.Item label="Password" name="password" rules={[
@@ -68,7 +68,7 @@ const UserForm = () => {
                         </Row>
                     </Card>
 
-                    <Card title="Role" bordered={false}>
+                    <Card title="Role">
                         <Row gutter={20}>
                             <Col span={12}>
                                 <Form.Item label="Role" name="role" rules={[
@@ -99,7 +99,7 @@ const UserForm = () => {
                                         placeholder="Select restaurant">
                                             
                                             {tenants?.map((tenant: Tenant) => (
-                                                <Select.Option value={tenant.id}>
+                                                <Select.Option value={tenant.id} key={tenant.id}>
                                                     {tenant.name}
                                                 </Select.Option>
                                             ))}

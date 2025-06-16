@@ -75,12 +75,12 @@ function HomePage() {
                 <Col span={12}>
                     <Row gutter={[16, 16]}>
                         <Col span={12}>
-                            <Card bordered={false}>
+                            <Card>
                                 <Statistic title="Total orders" value={52} />
                             </Card>
                         </Col>
                         <Col span={12}>
-                            <Card bordered={false}>
+                            <Card>
                                 <Statistic
                                     title="Total sale"
                                     value={70000}
@@ -92,13 +92,13 @@ function HomePage() {
                         <Col span={24}>
                             <Card
                                 title={<CardTitle title="Sales" PrefixIcon={BarChartIcon} />}
-                                bordered={false}></Card>
+                            ></Card>
                         </Col>
                     </Row>
                 </Col>
                 <Col span={12}>
                     <Card
-                        bordered={false}
+                    
                         title={<CardTitle title="Recent orders" PrefixIcon={BasketIcon} />}>
                         <List
                             className="demo-loadmore-list"

@@ -6,6 +6,6 @@ import { api } from "./client";
 export const login = (userData : userData)=> api.post( '/auth/login', { email : userData.email , password : userData.password } );
 export const self = ()=> api.get( '/auth/self' );
 export const logout = ()=> api.post( '/auth/logout' );
-export const getUsers = ()=> api.get('/users')
+export const getUsers = (queryString : string)=> api.get(`/users?${queryString}`)
 export const getTenants = ()=> api.get('/tenants')
 export const createUser = (userData : CreateUserData)=> api.post('/users',userData)
