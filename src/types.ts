@@ -24,3 +24,8 @@ export type Tenant = {
     name: string;
     address: string;
 };
+
+export type FeildData = {
+    name : string[],
+    value? : string
+}

@@ -1,9 +1,9 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from 'antd'
-import { PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { Breadcrumb, Button, Drawer, Flex, Form, Space, Spin, Table, theme } from 'antd'
+import { LoadingOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Link , Navigate } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createUser, getUsers } from '../../http/api';
-import type { CreateUserData, User } from '../../types';
+import type { CreateUserData, FeildData, User } from '../../types';
 import { useAuthStore } from '../../../store';
 import UsersFilter from './userFilter';
 import { useState } from 'react';
@@ -41,6 +41,7 @@ const columns = [
 
 const Users = () => {
     const [form] = Form.useForm();
+    const [filterform] = Form.useForm();
     const queryClient = useQueryClient();
 
     const [queryParams , setQueryParams] = useState({
@@ -54,7 +55,7 @@ const Users = () => {
     const [userDrawer,setUserDrawer] = useState(false);
     const {
         data: users,
-        isLoading,
+        isFetching,
         isError,
         error,
     } = useQuery({
@@ -66,6 +67,7 @@ const Users = () => {
             console.log(queryString);
             return getUsers(queryString).then((res) => res.data);
         },
+        placeholderData : keepPreviousData
     });
 
     const { mutate: userMutate } = useMutation({
@@ -85,6 +87,18 @@ const Users = () => {
         form.resetFields();
     }
 
+    const onFilterChange = async (changedFeilds : FeildData[])=>{
+        console.log(changedFeilds)
+
+        const changedFilterFeilds = changedFeilds.map((item)=>(
+            {
+                [item.name[0]] : item.value
+            }
+        )).reduce((acc,item)=>({...acc,...item}),{})
+
+        setQueryParams((prev)=>({...prev,...changedFilterFeilds}))
+    }
+
     if(user && user.role=='manager'){
         return <Navigate to="/"/>
     }
@@ -92,26 +106,27 @@ const Users = () => {
     return (
         <>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Breadcrumb
+                <Flex justify='space-between'>
+                    <Breadcrumb
                     separator={<RightOutlined />}
                     items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Users' }]}
                 />
-                {isLoading && <div>Loading...</div>}
-                {isError && <div>{error.message}</div>}
-                <UsersFilter onFilterChange={
-                    (filterName : string , filterValue : string)=>{
-                        console.log(filterName);
-                        console.log(filterValue);
-                    }
-                }>
-                    <Button type="primary" 
-                        icon={<PlusOutlined />} 
-                        onClick={
-                            ()=>setUserDrawer(true)
-                        }>
-                        Add User
-                    </Button>
-                </UsersFilter>
+                    {isFetching && <Spin indicator={<LoadingOutlined spin />} />}
+                    {isError && <div>{error.message}</div>}
+                </Flex>
+                
+                <Form form={filterform} onFieldsChange={onFilterChange}>
+                    <UsersFilter>
+                        <Button type="primary" 
+                            icon={<PlusOutlined />} 
+                            onClick={
+                                ()=>setUserDrawer(true)
+                            }>
+                            Add User
+                        </Button>
+                    </UsersFilter>
+                </Form>
+
                 <Table 
                 columns={columns} 
                 dataSource={users?.data} 
