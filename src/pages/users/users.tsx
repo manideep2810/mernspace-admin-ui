@@ -106,7 +106,6 @@ const Users = () => {
     }, []);
 
     const onFilterChange = async (changedFeilds : FeildData[])=>{
-        console.log(changedFeilds)
 
         const changedFilterFeilds = changedFeilds.map((item)=>(
             {

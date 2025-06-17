@@ -6,8 +6,8 @@ import type { Tenant } from '../../types';
 const UserForm = () => {
     const { data: tenants } = useQuery({
         queryKey: ['tenants'],
-        queryFn: () => {
-            return getTenants().then((res) => res.data.tenants);
+        queryFn: async () => {
+            return getTenants('').then((res) => res.data.tenants);
         },
     });
      
