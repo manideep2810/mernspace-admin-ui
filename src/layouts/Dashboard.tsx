@@ -1,4 +1,4 @@
-import { Navigate, Outlet , NavLink } from "react-router-dom"
+import { Navigate, Outlet , NavLink, useLocation } from "react-router-dom"
 import Icon, { BellFilled, UserOutlined } from '@ant-design/icons'
 import { useAuthStore } from "../../store"
 import { Avatar, Badge, Dropdown, Flex, Layout, Menu, Space, theme } from "antd";
@@ -54,6 +54,7 @@ const getItems = (role : string)=>{
 
 const Dashboard = () => {
     const { logout: logoutFromStore } = useAuthStore();
+    const location = useLocation();
 
     const { mutate: logoutMutate } = useMutation({
         mutationKey: ['logout'],
@@ -70,7 +71,7 @@ const Dashboard = () => {
     } = theme.useToken();
     const { user } = useAuthStore();
     if(!user){
-        return <Navigate to='/auth/login' />
+        return <Navigate to={`/auth/login?ReturnTo=${location.pathname}`} />
     }
     const items = getItems(user.role);
 
