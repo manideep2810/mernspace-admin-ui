@@ -2,11 +2,11 @@ import { Breadcrumb, Button, Drawer, Flex, Form, Space, Spin, Table, theme } fro
 import { LoadingOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Link , Navigate } from 'react-router-dom';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createUser, getUsers } from '../../http/api';
+import { createUser, getUsers, updateUser } from '../../http/api';
 import type { CreateUserData, FeildData, User } from '../../types';
 import { useAuthStore } from '../../../store';
 import UsersFilter from './userFilter';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import UserForm from './usersForm';
 import { debounce } from 'lodash';
 
@@ -46,11 +46,13 @@ const columns = [
             return <div>{record.tenant?.name}</div>;
         },
     },
+   
 ];
 
 const Users = () => {
     const [form] = Form.useForm();
     const [filterform] = Form.useForm();
+    const [currentUser , setCurrentUser] = useState<User|null>(null);
     const queryClient = useQueryClient();
 
     const [queryParams , setQueryParams] = useState({
@@ -61,7 +63,17 @@ const Users = () => {
     const {
         token : {colorBgLayout}
     } = theme.useToken();
+
     const [userDrawer,setUserDrawer] = useState(false);
+
+    useEffect(()=>{
+        if(currentUser){
+            // console.log(currentUser)
+            setUserDrawer(true);
+            form.setFieldsValue({...currentUser,password : undefined , tenantId : currentUser.tenant?.id});
+        }
+    },[currentUser,form])
+
     const {
         data: users,
         isFetching,
@@ -76,7 +88,7 @@ const Users = () => {
             const queryString = new URLSearchParams(
                 filteredParams as unknown as Record<string,string>
             ).toString();
-            console.log(queryString);
+            // console.log(queryString);
             return getUsers(queryString).then((res) => res.data);
         },
         placeholderData : keepPreviousData
@@ -91,12 +103,29 @@ const Users = () => {
         },
     });
 
+    const { mutate: updateUserMutate } = useMutation({
+        mutationKey: ['user-update'],
+        mutationFn: async (data: CreateUserData) => updateUser(data,currentUser!.id).then((res) => res.data),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({queryKey : ['users']})
+            return;
+        },
+    });
+
     const {user} = useAuthStore();
 
     const onSubmitHandle = async ()=>{
-        form.validateFields();
-        userMutate(form.getFieldsValue());
+        await form.validateFields();
+        const isEditing = !!currentUser;
+        if(isEditing){
+            // console.log(form.getFieldsValue())
+            await updateUserMutate(form.getFieldsValue());
+        }else{
+            await userMutate(form.getFieldsValue());
+        }
         form.resetFields();
+        setUserDrawer(false);
+        setCurrentUser(null);
     }
 
     const debouncedQUpdate = useMemo(() => {
@@ -150,7 +179,19 @@ const Users = () => {
                 </Form>
 
                 <Table 
-                columns={columns} 
+                columns={[...columns,
+                        {
+                            title : 'Actions',
+                            key : 'actions',
+                            render : (_:string , record : User) => {
+                                return (
+                                    <Button type='link' onClick={()=>{
+                                        setCurrentUser(record);
+                                    }}>Edit</Button>
+                                )
+                            }
+                        }
+                ]} 
                 dataSource={users?.data} 
                 rowKey={'id'}
                 pagination={
@@ -174,7 +215,7 @@ const Users = () => {
                 />
 
                 <Drawer
-                    title='Create User'
+                    title={currentUser ? 'Edit User' : 'Add User'}
                     width={720}
                     open={userDrawer}
                     styles={{body : {backgroundColor : colorBgLayout}}}
@@ -182,6 +223,7 @@ const Users = () => {
                         ()=>{
                             setUserDrawer(false)
                             form.resetFields();
+                            setCurrentUser(null);
                         }
                     }
                     extra = {
@@ -190,6 +232,7 @@ const Users = () => {
                                 ()=>{
                                     form.resetFields();
                                     setUserDrawer(false);
+                                    setCurrentUser(null);
                                 }
                             }>Cancel</Button>
                             <Button type='primary' onClick={onSubmitHandle} >Submit</Button>
@@ -198,7 +241,7 @@ const Users = () => {
                 >
                 
                     <Form layout='vertical' form={form}>
-                        <UserForm />
+                        <UserForm isEditing={!!currentUser}/>
                     </Form>
 
                 </Drawer>
