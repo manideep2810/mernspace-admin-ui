@@ -10,9 +10,11 @@ export const api = axios.create({
     }
 })
 
+const AUTH_SERVICE = "/api/auth";
+
 const refreshToken = async () => {
     await axios.post(
-        `${import.meta.env.VITE_BACKEND_API_URL}/auth/refresh`,
+        `${import.meta.env.VITE_BACKEND_API_URL}${AUTH_SERVICE}/auth/refresh`,
         {},
         {
             withCredentials: true,

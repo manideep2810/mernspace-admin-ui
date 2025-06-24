@@ -1,16 +1,15 @@
 import type { CreateRestaurentData, CreateUserData, userData } from "../types";
 import { api } from "./client";
 
-
+const AUTH_SERVICE = "/api/auth";
 // Auth service
-export const login = (userData : userData)=> api.post( '/auth/login', { email : userData.email , password : userData.password } );
-export const self = ()=> api.get( '/auth/self' );
-export const logout = ()=> api.post( '/auth/logout' );
-export const getUsers = (queryString : string)=> api.get(`/users?${queryString}`)
-export const getTenants = (queryString : string)=> api.get(`/tenants?${queryString}`)
-export const createUser = (userData : CreateUserData)=> api.post('/users',userData)
-export const createTenant = (RestaurentData : CreateRestaurentData)=> api.post('/tenants',RestaurentData)
+export const login = (userData : userData)=> api.post(`${AUTH_SERVICE}/auth/login`, { email : userData.email , password : userData.password } );
+export const self = ()=> api.get(`${AUTH_SERVICE}/auth/self` );
+export const logout = ()=> api.post(`${AUTH_SERVICE}/auth/logout` );
+export const getUsers = (queryString : string)=> api.get(`${AUTH_SERVICE}/users?${queryString}`)
+export const getTenants = (queryString : string)=> api.get(`${AUTH_SERVICE}/tenants?${queryString}`)
+export const createUser = (userData : CreateUserData)=> api.post(`${AUTH_SERVICE}/users`,userData)
+export const createTenant = (RestaurentData : CreateRestaurentData)=> api.post(`${AUTH_SERVICE}/tenants`,RestaurentData)
 export const updateUser = (user : CreateUserData , id : string) => {
-    console.log('hitting request');
-    return api.patch(`/users/${id}`,user)
+    return api.patch(`${AUTH_SERVICE}/users/${id}`,user)
 };
