@@ -2,6 +2,7 @@ import type { CreateRestaurentData, CreateUserData, userData } from "../types";
 import { api } from "./client";
 
 const AUTH_SERVICE = "/api/auth";
+const CATALOG_SERVICE = "/api/catalog"
 // Auth service
 export const login = (userData : userData)=> api.post(`${AUTH_SERVICE}/auth/login`, { email : userData.email , password : userData.password } );
 export const self = ()=> api.get(`${AUTH_SERVICE}/auth/self` );
@@ -13,3 +14,6 @@ export const createTenant = (RestaurentData : CreateRestaurentData)=> api.post(`
 export const updateUser = (user : CreateUserData , id : string) => {
     return api.patch(`${AUTH_SERVICE}/users/${id}`,user)
 };
+
+// Catalog Service
+export const getCategories = () => api.get(`${CATALOG_SERVICE}/categories`);
