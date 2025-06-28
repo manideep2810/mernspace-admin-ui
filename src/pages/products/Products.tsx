@@ -1,5 +1,5 @@
-import { Breadcrumb, Button, Flex, Space , Form ,  Image, Table, Tag, Typography} from "antd"
-import {PlusOutlined, RightOutlined} from '@ant-design/icons'
+import { Breadcrumb, Button, Flex, Space , Form ,  Image, Table, Tag, Typography, Spin} from "antd"
+import {LoadingOutlined, PlusOutlined, RightOutlined} from '@ant-design/icons'
 import { Link } from "react-router-dom"
 import ProductsFilter from "./ProductsFilter"
 import type { FeildData, Product } from '../../types'
@@ -67,6 +67,9 @@ const Products = () => {
 
     const {
         data: products,
+        isFetching,
+        isError,
+        error,
     } = useQuery({
         queryKey: ['products', queryParams],
         queryFn: () => {
@@ -111,6 +114,10 @@ const Products = () => {
                         separator={<RightOutlined />}
                         items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Products' }]}
                     />
+                     {isFetching && (
+                        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                    )}
+                    {isError && <Typography.Text type="danger">{error.message}</Typography.Text>}
                 </Flex>
             </Space>
 
