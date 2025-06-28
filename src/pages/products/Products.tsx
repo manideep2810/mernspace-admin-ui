@@ -8,6 +8,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getProducts } from '../../http/api';
 import { format } from 'date-fns';
 import { debounce } from "lodash"
+import { useAuthStore } from "../../../store"
 
 const PER_PAGE = 3
 
@@ -60,9 +61,11 @@ const columns = [
 
 const Products = () => {
     const [filterForm] = Form.useForm();
+    const {user} = useAuthStore();
     const [queryParams, setQueryParams] = React.useState({
         perPage: PER_PAGE,
         currentPage: 1,
+        tenantId : user?.role === 'manager' ? user.tenant.id : undefined
     });
 
     const {

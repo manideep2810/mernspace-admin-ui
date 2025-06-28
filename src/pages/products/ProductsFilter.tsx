@@ -2,6 +2,7 @@ import { Card, Col, Form, Input, Row, Select, Space, Switch, Typography } from '
 import type { Category, Tenant } from '../../types';
 import { getTenants , getCategories } from '../../http/api';
 import {useQuery} from '@tanstack/react-query'
+import { useAuthStore } from '../../../store';
 
 type ProductsFilterProps = {
     children?: React.ReactNode;
@@ -22,6 +23,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
         },
     });
 
+    const {user} = useAuthStore();
     // console.log(categories);
 
     return (
@@ -51,25 +53,30 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                                 </Select>
                             </Form.Item>
                         </Col>
-
-                        <Col span={6}>
-                            <Form.Item name="tenantId">
-                                <Select
-                                    style={{ width: '100%' }}
-                                    allowClear={true}
-                                    placeholder="Select restaurant">
-                                     {restaurants?.data.data.map((restaurant: Tenant) => {
-                                        return (
-                                            <Select.Option
-                                                key={restaurant.id}
-                                                value={restaurant.id}>
-                                                {restaurant.name}
-                                            </Select.Option>
-                                        );
-                                    })}
-                                </Select>
-                            </Form.Item>
-                        </Col>
+                        
+                        {
+                            user?.role === 'admin' && (
+                                <Col span={6}>
+                                    <Form.Item name="tenantId">
+                                        <Select
+                                            style={{ width: '100%' }}
+                                            allowClear={true}
+                                            placeholder="Select restaurant">
+                                            {restaurants?.data.data.map((restaurant: Tenant) => {
+                                                return (
+                                                    <Select.Option
+                                                        key={restaurant.id}
+                                                        value={restaurant.id}>
+                                                        {restaurant.name}
+                                                    </Select.Option>
+                                                );
+                                            })}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            )
+                        }
+                        
 
                         <Col span={6}>
                             <Space>
