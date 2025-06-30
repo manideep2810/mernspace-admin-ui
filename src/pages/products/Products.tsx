@@ -1,14 +1,16 @@
-import { Breadcrumb, Button, Flex, Space , Form ,  Image, Table, Tag, Typography, Spin} from "antd"
+import { Breadcrumb, Button, Flex, Space , Form ,  Image, Table, Tag, Typography, Spin, Drawer, theme} from "antd"
 import {LoadingOutlined, PlusOutlined, RightOutlined} from '@ant-design/icons'
 import { Link } from "react-router-dom"
 import ProductsFilter from "./ProductsFilter"
 import type { FeildData, Product } from '../../types'
 import React from 'react';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { getProducts } from '../../http/api';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createProduct, getProducts } from '../../http/api';
 import { format } from 'date-fns';
 import { debounce } from "lodash"
 import { useAuthStore } from "../../../store"
+import ProductForm from "./forms/ProductForm"
+import { makeFormData } from "./helper"
 
 const PER_PAGE = 3
 
@@ -60,6 +62,7 @@ const columns = [
 ];
 
 const Products = () => {
+    const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
     const {user} = useAuthStore();
     const [queryParams, setQueryParams] = React.useState({
@@ -88,6 +91,11 @@ const Products = () => {
         placeholderData: keepPreviousData,
     });
 
+     const {
+            token: { colorBgLayout },
+        } = theme.useToken();
+        const [drawerOpen, setDrawerOpen] = React.useState(false);
+
     const debouncedQUpdate = React.useMemo(() => {
         return debounce((value: string | undefined) => {
             setQueryParams((prev) => ({ ...prev, q: value, page: 1 }));
@@ -107,6 +115,56 @@ const Products = () => {
         }
     };
 
+     const queryClient = useQueryClient()
+    const { mutate: productMutate } = useMutation({
+        mutationKey: ['product'],
+        mutationFn: async (data: FormData) => createProduct(data).then((res) => res.data),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            form.resetFields();
+            setDrawerOpen(false);
+            return;
+        },
+    });
+
+    const onHandleSubmit = async () => {
+        console.log(form.getFieldsValue());
+        console.log('submiting...')
+        await form.validateFields();
+
+        const priceConfiguration = form.getFieldValue('priceConfiguration');
+        const pricing = Object.entries(priceConfiguration).reduce((acc, [key, value]) => {
+            const parsedKey = JSON.parse(key);
+            return {
+                ...acc,
+                [parsedKey.configurationKey]: {
+                    priceType: parsedKey.priceType,
+                    availableOptions: value,
+                },
+            };
+        }, {});
+
+        const categoryId = JSON.parse(form.getFieldValue('categoryId'))._id;
+
+        const attributes = Object.entries(form.getFieldValue('attributes')).map(([key, value]) => {
+            return {
+                name: key,
+                value: value,
+            };
+        });
+
+        const postData = {
+            ...form.getFieldsValue(),
+            isPublish: form.getFieldValue('isPublish') ? true : false,
+            image: form.getFieldValue('image'),
+            categoryId,
+            priceConfiguration: pricing,
+            attributes,
+        };
+
+        const formData = makeFormData(postData);
+        await productMutate(formData);
+    };
 
    
     return (
@@ -126,49 +184,79 @@ const Products = () => {
 
             <Form form={filterForm} onFieldsChange={onFilterChange}>
                 <ProductsFilter>
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => {}}>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => {setDrawerOpen(true)}}>
                         Add Product
                     </Button>
                 </ProductsFilter>
             </Form>
 
-             <Table
-                    columns={[
-                        ...columns,
-                        {
-                            title: 'Actions',
-                            render: () => {
-                                return (
-                                    <Space>
-                                        <Button type="link" onClick={() => {}}>
-                                            Edit
-                                        </Button>
-                                    </Space>
-                                );
-                            },
+            <Table
+                columns={[
+                    ...columns,
+                    {
+                        title: 'Actions',
+                        key : 'Actions',
+                        render: () => {
+                            return (
+                                <Space>
+                                    <Button type="link" onClick={() => {}}>
+                                        Edit
+                                    </Button>
+                                </Space>
+                            );
                         },
-                    ]}
-                    dataSource={products}
-                    rowKey={'id'}
-                    pagination={{
-                        total: products?.total,
-                        pageSize: queryParams.perPage,
-                        current: queryParams.currentPage,
-                        onChange: (page) => {
-                            console.log(page);
-                            setQueryParams((prev) => {
-                                return {
-                                    ...prev,
-                                    currentPage: page,
-                                };
-                            });
-                        },
-                        showTotal: (total: number, range: number[]) => {
-                            console.log(total, range);
-                            return `Showing ${range[0]}-${range[1]} of ${total} items`;
-                        },
-                    }}
-                />
+                    },
+                ]}
+                dataSource={products}
+                rowKey={'id'}
+                pagination={{
+                    total: products?.total,
+                    pageSize: queryParams.perPage,
+                    current: queryParams.currentPage,
+                    onChange: (page) => {
+                        console.log(page);
+                        setQueryParams((prev) => {
+                            return {
+                                ...prev,
+                                currentPage: page,
+                            };
+                        });
+                    },
+                    showTotal: (total: number, range: number[]) => {
+                        // console.log(total, range);
+                        return `Showing ${range[0]}-${range[1]} of ${total} items`;
+                    },
+                }}
+            />
+
+            <Drawer
+                title={'Add Product'}
+                width={720}
+                styles={{ body: { backgroundColor: colorBgLayout } }}
+                destroyOnHidden={true}
+                open={drawerOpen}
+                onClose={() => {
+                    form.resetFields();
+                    setDrawerOpen(false);
+                }}
+                extra={
+                    <Space>
+                        <Button
+                            onClick={() => {
+                                form.resetFields();
+                                setDrawerOpen(false);
+                            }}>
+                            Cancel
+                        </Button>
+                        <Button type="primary" onClick={onHandleSubmit}>
+                            Submit
+                        </Button>
+                    </Space>
+                }>
+                <Form layout="vertical" form={form}>
+                    <ProductForm/>
+                </Form>
+            </Drawer>
         </>
     )
 }

@@ -18,3 +18,7 @@ export const updateUser = (user : CreateUserData , id : string) => {
 // Catalog Service
 export const getCategories = () => api.get(`${CATALOG_SERVICE}/categories`);
 export const getProducts = (queryParam: string) => api.get(`${CATALOG_SERVICE}/products?${queryParam}`);
+export const createProduct = (product: FormData) =>
+api.post(`${CATALOG_SERVICE}/products`, product, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+});
